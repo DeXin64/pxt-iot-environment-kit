@@ -512,7 +512,7 @@ namespace Environment {
 
         let fail_flag: number = 0
         let pin = dht11pin
-        const MAX_RETRY_COUNT = 5;
+        const MAX_RETRY_COUNT = 25;
         const TIMEOUT_MS = 100;
 
         pins.setPull(pin, PinPullMode.PullUp)
