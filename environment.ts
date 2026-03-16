@@ -525,7 +525,9 @@ namespace Environment {
                     }
                 }
                 basic.pause(1500)
-                return (dhtvalue1 >> 16) & 0xFF;
+                let temp_int = (dhtvalue1 >> 16) & 0xFF;
+                let temp_dec = (dhtvalue1 >> 8) & 0xFF;
+                return temp_int + temp_dec / 100;
             case DHT11Type.DHT11_temperature_F:
                 while (pins.digitalReadPin(pin) == 1);
                 while (pins.digitalReadPin(pin) == 0);
@@ -547,7 +549,10 @@ namespace Environment {
                     }
                 }
                 basic.pause(1500)
-                return Math.round((((dhtvalue >> 16) & 0xFF) * 9 / 5) + 32);
+                let temp_int = (dhtvalue >> 16) & 0xFF;
+                let temp_dec = (dhtvalue >> 8) & 0xFF;
+                let temp_c = temp_int + temp_dec / 100;
+                return Math.round((temp_c * 9 / 5) + 32);
             case DHT11Type.DHT11_humidity:
                 while (pins.digitalReadPin(pin) == 1);
                 while (pins.digitalReadPin(pin) == 0);
@@ -571,7 +576,9 @@ namespace Environment {
                     }
                 }
                 basic.pause(1500);
-                return (value >> 24) & 0xFF;
+                let hum_int = (value >> 24) & 0xFF;
+                let hum_dec = (value >> 16) & 0xFF;
+                return hum_int + hum_dec / 100;
             default:
                 basic.pause(1500);
                 return 0;
