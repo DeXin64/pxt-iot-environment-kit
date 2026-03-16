@@ -549,9 +549,9 @@ namespace Environment {
                     }
                 }
                 basic.pause(1500)
-                let temp_int = (dhtvalue >> 16) & 0xFF;
-                let temp_dec = (dhtvalue >> 8) & 0xFF;
-                let temp_c = temp_int + temp_dec / 100;
+                let temp_int_f = (dhtvalue >> 16) & 0xFF;
+                let temp_dec_f = (dhtvalue >> 8) & 0xFF;
+                let temp_c = temp_int_f + temp_dec_f / 100;
                 return Math.round((temp_c * 9 / 5) + 32);
             case DHT11Type.DHT11_humidity:
                 while (pins.digitalReadPin(pin) == 1);
