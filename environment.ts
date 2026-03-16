@@ -486,10 +486,10 @@ namespace Environment {
         return 1
     }
 
-    let __dht11_last_read_time = 0;
-    let __temperature: number = 999
+    let __dht11_power_on = 1;
+    let __dht11_value_stable = 0;
+    let __temperature: number = 0
     let __humidity: number = 0
-
     const TEMP_FLOAT_RANGE = 10;
 
     /**
@@ -499,143 +499,138 @@ namespace Environment {
     //% advanced=true
     //% blockId="readdht11" block="value of dht11 %dht11type| at pin %dht11pin"
     export function dht11value(dht11type: DHT11Type, dht11pin: DigitalPin): number {
-        if (__dht11_last_read_time != 0 && __dht11_last_read_time + 1000 > input.runningTime()) {
-            switch (dht11type) {
-                case DHT11Type.DHT11_temperature_C:
-                    return __temperature
-                case DHT11Type.DHT11_temperature_F:
-                    return (__temperature * 1.8) + 32
-                case DHT11Type.DHT11_humidity:
-                    return __humidity
-                default:
-                    return 0
-            }
-        }
-
-        let fail_flag: number = 0
         let pin = dht11pin
-        const MAX_RETRY_COUNT = 15;
-        const TIMEOUT_MS = 100;
 
+        pins.digitalWritePin(pin, 0)
+        basic.pause(18)
+        let i = pins.digitalReadPin(pin);
         pins.setPull(pin, PinPullMode.PullUp)
-
-        for (let count = 0; count < MAX_RETRY_COUNT; count++) {
-            if (count != 0) {
-                basic.pause(5);
-            }
-
-            fail_flag = 0;
-
-            pins.digitalWritePin(pin, 0)
-            basic.pause(18)
-            pins.setPull(pin, PinPullMode.PullUp)
-
-            let startTime = input.runningTime();
-            while (pins.digitalReadPin(pin) == 1) {
-                if (input.runningTime() - startTime > TIMEOUT_MS) {
-                    fail_flag = 1;
-                    break;
-                }
-            }
-            if (fail_flag) continue;
-
-            startTime = input.runningTime();
-            while (pins.digitalReadPin(pin) == 0) {
-                if (input.runningTime() - startTime > TIMEOUT_MS) {
-                    fail_flag = 1;
-                    break;
-                }
-            }
-            if (fail_flag) continue;
-
-            startTime = input.runningTime();
-            while (pins.digitalReadPin(pin) == 1) {
-                if (input.runningTime() - startTime > TIMEOUT_MS) {
-                    fail_flag = 1;
-                    break;
-                }
-            }
-            if (fail_flag) continue;
-
-            let data_arr = [0, 0, 0, 0, 0];
-            let i, j;
-            let readSuccess = true;
-
-            for (i = 0; i < 5 && readSuccess; i++) {
-                for (j = 0; j < 8; j++) {
-                    let counterd = 0;
-                    let counter = 0;
-                    
-                    startTime = input.runningTime();
-                    while (pins.digitalReadPin(pin) == 0) {
-                        counterd += 1;
-                        if (input.runningTime() - startTime > TIMEOUT_MS) {
-                            readSuccess = false;
-                            break;
-                        }
-                    }
-                    
-                    if (!readSuccess) break;
-                    
-                    startTime = input.runningTime();
-                    while (pins.digitalReadPin(pin) == 1) {
-                        counter += 1;
-                        if (input.runningTime() - startTime > TIMEOUT_MS) {
-                            readSuccess = false;
-                            break;
-                        }
-                    }
-                    
-                    if (!readSuccess) break;
-                    
-                    if (counter > counterd) {
-                        data_arr[i] |= 1 << (7 - j);
-                    }
-                }
-            }
-
-            if (fail_flag || !readSuccess) {
-                continue;
-            }
-
-            if (data_arr[4] == ((data_arr[0] + data_arr[1] + data_arr[2] + data_arr[3]) & 0xFF)) {
-                let temp_c = data_arr[2] + data_arr[3] / 100;
-                let humidity = data_arr[0] + data_arr[1] / 100;
-                
-                let temp_diff = Math.abs(temp_c - __temperature);
-                if (temp_diff <= TEMP_FLOAT_RANGE) {
-                    __temperature = temp_c;
-                    __humidity = humidity;
-                    __dht11_last_read_time = input.runningTime();
-                    break;
-                }
-            }
-
-            fail_flag = 1;
-        }
-
-        if (__temperature != 999 && __temperature != 0) {
-            switch (dht11type) {
-                case DHT11Type.DHT11_temperature_C:
-                    return __temperature
-                case DHT11Type.DHT11_temperature_F:
-                    return (__temperature * 1.8) + 32
-                case DHT11Type.DHT11_humidity:
-                    return __humidity
-                default:
-                    return 0
-            }
-        }
 
         switch (dht11type) {
             case DHT11Type.DHT11_temperature_C:
-                return __temperature
+                let dhtvalue1 = 0;
+                let dhtcounter1 = 0;
+                let dhtcounter1d = 0;
+                while (pins.digitalReadPin(pin) == 1);
+                while (pins.digitalReadPin(pin) == 0);
+                while (pins.digitalReadPin(pin) == 1);
+                for (let i = 0; i <= 40 - 1; i++) {
+                    dhtcounter1d = 0
+                    while (pins.digitalReadPin(pin) == 0)
+                    {
+                        dhtcounter1d += 1;
+                    }
+                    dhtcounter1 = 0
+                    while (pins.digitalReadPin(pin) == 1) {
+                        dhtcounter1 += 1;
+                    }
+                    if (dhtcounter1 > dhtcounter1d) {
+                        dhtvalue1 = dhtvalue1 + (1 << (39 - i));
+                    }
+                }
+                basic.pause(1500)
+                
+                let temp_c = (dhtvalue1 >> 16) & 0xFF;
+                
+                if (__dht11_power_on === 1) {
+                    __temperature = temp_c;
+                    __dht11_power_on = 0;
+                    __dht11_value_stable = 1;
+                    return temp_c;
+                }
+                
+                if (__dht11_value_stable === 1) {
+                    let temp_diff = Math.abs(temp_c - __temperature);
+                    if (temp_diff <= TEMP_FLOAT_RANGE) {
+                        __temperature = temp_c;
+                    }
+                }
+                
+                return __temperature;
+
             case DHT11Type.DHT11_temperature_F:
-                return (__temperature * 1.8) + 32
+                while (pins.digitalReadPin(pin) == 1);
+                while (pins.digitalReadPin(pin) == 0);
+                while (pins.digitalReadPin(pin) == 1);
+                let dhtvalue = 0;
+                let dhtcounter = 0;
+                let dhtcounterd = 0;
+                for (let i = 0; i <= 40 - 1; i++) {
+                    dhtcounterd = 0
+                    while (pins.digitalReadPin(pin) == 0) {
+                        dhtcounterd += 1;
+                    }
+                    dhtcounter = 0
+                    while (pins.digitalReadPin(pin) == 1) {
+                        dhtcounter += 1;
+                    }
+                    if (dhtcounter > dhtcounterd) {
+                        dhtvalue = dhtvalue + (1 << (39 - i));
+                    }
+                }
+                basic.pause(1500)
+                
+                let temp_c = (dhtvalue >> 16) & 0xFF;
+                let temp_f = Math.round((temp_c * 9 / 5) + 32);
+                
+                if (__dht11_power_on === 1) {
+                    __temperature = temp_c;
+                    __dht11_power_on = 0;
+                    __dht11_value_stable = 1;
+                    return temp_f;
+                }
+                
+                if (__dht11_value_stable === 1) {
+                    let temp_diff = Math.abs(temp_c - __temperature);
+                    if (temp_diff <= TEMP_FLOAT_RANGE) {
+                        __temperature = temp_c;
+                    }
+                }
+                
+                return (__temperature * 1.8) + 32;
+
             case DHT11Type.DHT11_humidity:
-                return __humidity
+                while (pins.digitalReadPin(pin) == 1);
+                while (pins.digitalReadPin(pin) == 0);
+                while (pins.digitalReadPin(pin) == 1);
+
+                let value = 0;
+                let counter = 0;
+                let counterd = 0;
+                for (let i = 0; i <= 40 - 1; i++) {
+                    counterd = 0
+                    while (pins.digitalReadPin(pin) == 0)
+                    {
+                        counterd += 1;
+                    }
+                    counter = 0
+                    while (pins.digitalReadPin(pin) == 1) {
+                        counter += 1;
+                    }
+                    if (counter > counterd) {
+                        value = value + (1 << (39 - i));
+                    }
+                }
+                basic.pause(1500);
+                
+                let humidity = (value >> 24) & 0xFF;
+                
+                if (__dht11_power_on === 1) {
+                    __humidity = humidity;
+                    __dht11_power_on = 0;
+                    __dht11_value_stable = 1;
+                    return humidity;
+                }
+                
+                if (__dht11_value_stable === 1) {
+                    __humidity = humidity;
+                }
+                
+                return __humidity;
+
             default:
-                return 0
+                basic.pause(1500);
+                return 0;
         }
     }
 
