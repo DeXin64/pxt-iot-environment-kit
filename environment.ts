@@ -510,7 +510,7 @@ namespace Environment {
                 while (pins.digitalReadPin(pin) == 1);
                 while (pins.digitalReadPin(pin) == 0);
                 while (pins.digitalReadPin(pin) == 1);
-                for (let i = 0; i <= 32 - 1; i++) {
+                for (let i = 0; i <= 40 - 1; i++) {
                     dhtcounter1d = 0
                     while (pins.digitalReadPin(pin) == 0)
                     {
@@ -520,14 +520,12 @@ namespace Environment {
                     while (pins.digitalReadPin(pin) == 1) {
                         dhtcounter1 += 1;
                     }
-                    if (i > 15) {
-                        if (dhtcounter1 > dhtcounter1d) {
-                            dhtvalue1 = dhtvalue1 + (1 << (31 - i));
-                        }
+                    if (dhtcounter1 > dhtcounter1d) {
+                        dhtvalue1 = dhtvalue1 + (1 << (39 - i));
                     }
                 }
                 basic.pause(1500)
-                return ((dhtvalue1 & 0x0000ff00) >> 8);
+                return (dhtvalue1 >> 16) & 0xFF;
             case DHT11Type.DHT11_temperature_F:
                 while (pins.digitalReadPin(pin) == 1);
                 while (pins.digitalReadPin(pin) == 0);
@@ -535,7 +533,7 @@ namespace Environment {
                 let dhtvalue = 0;
                 let dhtcounter = 0;
                 let dhtcounterd = 0;
-                for (let i = 0; i <= 32 - 1; i++) {
+                for (let i = 0; i <= 40 - 1; i++) {
                     dhtcounterd = 0
                     while (pins.digitalReadPin(pin) == 0) {
                         dhtcounterd += 1;
@@ -544,14 +542,12 @@ namespace Environment {
                     while (pins.digitalReadPin(pin) == 1) {
                         dhtcounter += 1;
                     }
-                    if (i > 15) {
-                        if (dhtcounter > dhtcounterd) {
-                            dhtvalue = dhtvalue + (1 << (31 - i));
-                        }
+                    if (dhtcounter > dhtcounterd) {
+                        dhtvalue = dhtvalue + (1 << (39 - i));
                     }
                 }
                 basic.pause(1500)
-                return Math.round((((dhtvalue & 0x0000ff00) >> 8) * 9 / 5) + 32);
+                return Math.round((((dhtvalue >> 16) & 0xFF) * 9 / 5) + 32);
             case DHT11Type.DHT11_humidity:
                 while (pins.digitalReadPin(pin) == 1);
                 while (pins.digitalReadPin(pin) == 0);
@@ -560,7 +556,7 @@ namespace Environment {
                 let value = 0;
                 let counter = 0;
                 let counterd = 0;
-                for (let i = 0; i <= 8 - 1; i++) {
+                for (let i = 0; i <= 40 - 1; i++) {
                     counterd = 0
                     while (pins.digitalReadPin(pin) == 0)
                     {
@@ -571,11 +567,11 @@ namespace Environment {
                         counter += 1;
                     }
                     if (counter > counterd) {
-                        value = value + (1 << (7 - i));
+                        value = value + (1 << (39 - i));
                     }
                 }
                 basic.pause(1500);
-                return value;
+                return (value >> 24) & 0xFF;
             default:
                 basic.pause(1500);
                 return 0;
