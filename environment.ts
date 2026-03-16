@@ -497,7 +497,7 @@ namespace Environment {
     //% advanced=true
     //% blockId="readdht11" block="value of dht11 %dht11type| at pin %dht11pin"
     export function dht11value(dht11type: DHT11Type, dht11pin: DigitalPin): number {
-        if (__dht11_last_read_time != 0 && __dht11_last_read_time + 1500 > input.runningTime()) {
+        if (__dht11_last_read_time != 0 && __dht11_last_read_time + 2000 > input.runningTime()) {
             switch (dht11type) {
                 case DHT11Type.DHT11_temperature_C:
                     return __temperature
