@@ -502,52 +502,83 @@ namespace Environment {
         basic.pause(18)
         let i = pins.digitalReadPin(pin);
         pins.setPull(pin, PinPullMode.PullUp)
-        while (pins.digitalReadPin(pin) == 1);
-        while (pins.digitalReadPin(pin) == 0);
-        while (pins.digitalReadPin(pin) == 1);
-
-        let dhtvalue = 0;
-        let dhtcounter = 0;
-        let dhtcounterd = 0;
-        for (let i = 0; i <= 40 - 1; i++) {
-            dhtcounterd = 0
-            while (pins.digitalReadPin(pin) == 0) {
-                dhtcounterd += 1;
-            }
-            dhtcounter = 0
-            while (pins.digitalReadPin(pin) == 1) {
-                dhtcounter += 1;
-            }
-            if (dhtcounter > dhtcounterd) {
-                dhtvalue = dhtvalue + (1 << (39 - i));
-            }
-        }
-
-        let humidity_int = (dhtvalue >> 32) & 0xFF;
-        let humidity_dec = (dhtvalue >> 24) & 0xFF;
-        let temperature_int = (dhtvalue >> 16) & 0xFF;
-        let temperature_dec = (dhtvalue >> 8) & 0xFF;
-        let checksum = dhtvalue & 0xFF;
-
-        if (checksum == ((humidity_int + humidity_dec + temperature_int + temperature_dec) & 0xFF)) {
-            __temperature = temperature_int + temperature_dec / 100
-            __humidity = humidity_int + humidity_dec / 100
-        } else {
-            __temperature = 0
-            __humidity = 0
-        }
-
-        basic.pause(1500)
-
         switch (dht11type) {
             case DHT11Type.DHT11_temperature_C:
-                return __temperature
+                let dhtvalue1 = 0;
+                let dhtcounter1 = 0;
+                let dhtcounter1d = 0;
+                while (pins.digitalReadPin(pin) == 1);
+                while (pins.digitalReadPin(pin) == 0);
+                while (pins.digitalReadPin(pin) == 1);
+                for (let i = 0; i <= 32 - 1; i++) {
+                    dhtcounter1d = 0
+                    while (pins.digitalReadPin(pin) == 0)
+                    {
+                        dhtcounter1d += 1;
+                    }
+                    dhtcounter1 = 0
+                    while (pins.digitalReadPin(pin) == 1) {
+                        dhtcounter1 += 1;
+                    }
+                    if (i > 15) {
+                        if (dhtcounter1 > dhtcounter1d) {
+                            dhtvalue1 = dhtvalue1 + (1 << (31 - i));
+                        }
+                    }
+                }
+                basic.pause(1500)
+                return ((dhtvalue1 & 0x0000ff00) >> 8);
             case DHT11Type.DHT11_temperature_F:
-                return (__temperature * 1.8) + 32
+                while (pins.digitalReadPin(pin) == 1);
+                while (pins.digitalReadPin(pin) == 0);
+                while (pins.digitalReadPin(pin) == 1);
+                let dhtvalue = 0;
+                let dhtcounter = 0;
+                let dhtcounterd = 0;
+                for (let i = 0; i <= 32 - 1; i++) {
+                    dhtcounterd = 0
+                    while (pins.digitalReadPin(pin) == 0) {
+                        dhtcounterd += 1;
+                    }
+                    dhtcounter = 0
+                    while (pins.digitalReadPin(pin) == 1) {
+                        dhtcounter += 1;
+                    }
+                    if (i > 15) {
+                        if (dhtcounter > dhtcounterd) {
+                            dhtvalue = dhtvalue + (1 << (31 - i));
+                        }
+                    }
+                }
+                basic.pause(1500)
+                return Math.round((((dhtvalue & 0x0000ff00) >> 8) * 9 / 5) + 32);
             case DHT11Type.DHT11_humidity:
-                return __humidity
+                while (pins.digitalReadPin(pin) == 1);
+                while (pins.digitalReadPin(pin) == 0);
+                while (pins.digitalReadPin(pin) == 1);
+
+                let value = 0;
+                let counter = 0;
+                let counterd = 0;
+                for (let i = 0; i <= 8 - 1; i++) {
+                    counterd = 0
+                    while (pins.digitalReadPin(pin) == 0)
+                    {
+                        counterd += 1;
+                    }
+                    counter = 0
+                    while (pins.digitalReadPin(pin) == 1) {
+                        counter += 1;
+                    }
+                    if (counter > counterd) {
+                        value = value + (1 << (7 - i));
+                    }
+                }
+                basic.pause(1500);
+                return value;
             default:
-                return 0
+                basic.pause(1500);
+                return 0;
         }
     }
 
