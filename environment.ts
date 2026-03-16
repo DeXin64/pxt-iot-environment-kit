@@ -492,7 +492,7 @@ namespace Environment {
     let __temperature: number = 0
     let __humidity: number = 0
     const TEMP_FLOAT_RANGE = 10;
-    const STABLE_THRESHOLD = 10;
+    const STABLE_THRESHOLD = 5;
 
     /**
      * get dht11 temperature and humidity Value
