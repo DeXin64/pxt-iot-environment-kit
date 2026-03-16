@@ -490,6 +490,8 @@ namespace Environment {
     let __temperature: number = 0
     let __humidity: number = 0
 
+    const TEMP_FLOAT_RANGE = 10;
+
     /**
      * get dht11 temperature and humidity Value
      * @param dht11pin describe parameter here
@@ -497,7 +499,7 @@ namespace Environment {
     //% advanced=true
     //% blockId="readdht11" block="value of dht11 %dht11type| at pin %dht11pin"
     export function dht11value(dht11type: DHT11Type, dht11pin: DigitalPin): number {
-        if (__dht11_last_read_time != 0 && __dht11_last_read_time + 2000 > input.runningTime()) {
+        if (__dht11_last_read_time != 0 && __dht11_last_read_time + 1000 > input.runningTime()) {
             switch (dht11type) {
                 case DHT11Type.DHT11_temperature_C:
                     return __temperature
@@ -512,7 +514,7 @@ namespace Environment {
 
         let fail_flag: number = 0
         let pin = dht11pin
-        const MAX_RETRY_COUNT = 25;
+        const MAX_RETRY_COUNT = 15;
         const TIMEOUT_MS = 100;
 
         pins.setPull(pin, PinPullMode.PullUp)
@@ -597,10 +599,16 @@ namespace Environment {
             }
 
             if (data_arr[4] == ((data_arr[0] + data_arr[1] + data_arr[2] + data_arr[3]) & 0xFF)) {
-                __temperature = data_arr[2] + data_arr[3] / 100
-                __humidity = data_arr[0] + data_arr[1] / 100
-                __dht11_last_read_time = input.runningTime();
-                break;
+                let temp_c = data_arr[2] + data_arr[3] / 100;
+                let humidity = data_arr[0] + data_arr[1] / 100;
+                
+                let temp_diff = Math.abs(temp_c - __temperature);
+                if (temp_diff <= TEMP_FLOAT_RANGE) {
+                    __temperature = temp_c;
+                    __humidity = humidity;
+                    __dht11_last_read_time = input.runningTime();
+                    break;
+                }
             }
 
             fail_flag = 1;
