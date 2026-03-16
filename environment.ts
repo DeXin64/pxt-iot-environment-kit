@@ -488,9 +488,11 @@ namespace Environment {
 
     let __dht11_power_on = 1;
     let __dht11_value_stable = 0;
+    let __stable_count = 0;
     let __temperature: number = 0
     let __humidity: number = 0
     const TEMP_FLOAT_RANGE = 10;
+    const STABLE_THRESHOLD = 10;
 
     /**
      * get dht11 temperature and humidity Value
@@ -535,8 +537,16 @@ namespace Environment {
                 if (__dht11_power_on === 1) {
                     __temperature = temp_c;
                     __dht11_power_on = 0;
-                    __dht11_value_stable = 1;
                     return temp_c;
+                }
+                
+                if (temp_c !== 0) {
+                    __stable_count++;
+                    if (__stable_count >= STABLE_THRESHOLD) {
+                        __dht11_value_stable = 1;
+                    }
+                } else {
+                    __stable_count = 0;
                 }
                 
                 if (__dht11_value_stable === 1) {
@@ -544,6 +554,8 @@ namespace Environment {
                     if (temp_diff <= TEMP_FLOAT_RANGE) {
                         __temperature = temp_c;
                     }
+                } else {
+                    __temperature = temp_c;
                 }
                 
                 return __temperature;
@@ -576,8 +588,16 @@ namespace Environment {
                 if (__dht11_power_on === 1) {
                     __temperature = temp_c_f;
                     __dht11_power_on = 0;
-                    __dht11_value_stable = 1;
                     return temp_f;
+                }
+                
+                if (temp_c_f !== 0) {
+                    __stable_count++;
+                    if (__stable_count >= STABLE_THRESHOLD) {
+                        __dht11_value_stable = 1;
+                    }
+                } else {
+                    __stable_count = 0;
                 }
                 
                 if (__dht11_value_stable === 1) {
@@ -585,6 +605,8 @@ namespace Environment {
                     if (temp_diff <= TEMP_FLOAT_RANGE) {
                         __temperature = temp_c_f;
                     }
+                } else {
+                    __temperature = temp_c_f;
                 }
                 
                 return (__temperature * 1.8) + 32;
@@ -618,11 +640,21 @@ namespace Environment {
                 if (__dht11_power_on === 1) {
                     __humidity = humidity;
                     __dht11_power_on = 0;
-                    __dht11_value_stable = 1;
                     return humidity;
                 }
                 
+                if (humidity !== 0) {
+                    __stable_count++;
+                    if (__stable_count >= STABLE_THRESHOLD) {
+                        __dht11_value_stable = 1;
+                    }
+                } else {
+                    __stable_count = 0;
+                }
+                
                 if (__dht11_value_stable === 1) {
+                    __humidity = humidity;
+                } else {
                     __humidity = humidity;
                 }
                 
