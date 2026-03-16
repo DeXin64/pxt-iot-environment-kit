@@ -614,7 +614,7 @@ namespace Environment {
             fail_flag = 1;
         }
 
-        if (__temperature != 999) {
+        if (__temperature != 999 && __temperature != 0) {
             switch (dht11type) {
                 case DHT11Type.DHT11_temperature_C:
                     return __temperature
