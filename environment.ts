@@ -540,21 +540,20 @@ namespace Environment {
                     return temp_c;
                 }
                 
-                if (temp_c !== 0 && temp_c === __temperature) {
-                    __stable_count++;
-                    if (__stable_count >= STABLE_THRESHOLD) {
-                        __dht11_value_stable = 1;
-                    }
-                } else {
-                    __stable_count = 0;
-                }
-                
                 if (__dht11_value_stable === 1) {
                     let temp_diff = Math.abs(temp_c - __temperature);
                     if (temp_diff <= TEMP_FLOAT_RANGE) {
                         __temperature = temp_c;
                     }
                 } else {
+                    if (temp_c !== 0 && temp_c === __temperature) {
+                        __stable_count++;
+                        if (__stable_count >= STABLE_THRESHOLD) {
+                            __dht11_value_stable = 1;
+                        }
+                    } else {
+                        __stable_count = 0;
+                    }
                     __temperature = temp_c;
                 }
                 
@@ -591,21 +590,20 @@ namespace Environment {
                     return temp_f;
                 }
                 
-                if (temp_c_f !== 0) {
-                    __stable_count++;
-                    if (__stable_count >= STABLE_THRESHOLD) {
-                        __dht11_value_stable = 1;
-                    }
-                } else {
-                    __stable_count = 0;
-                }
-                
                 if (__dht11_value_stable === 1) {
                     let temp_diff = Math.abs(temp_c_f - __temperature);
                     if (temp_diff <= TEMP_FLOAT_RANGE) {
                         __temperature = temp_c_f;
                     }
                 } else {
+                    if (temp_c_f !== 0 && temp_c_f === __temperature) {
+                        __stable_count++;
+                        if (__stable_count >= STABLE_THRESHOLD) {
+                            __dht11_value_stable = 1;
+                        }
+                    } else {
+                        __stable_count = 0;
+                    }
                     __temperature = temp_c_f;
                 }
                 
@@ -643,18 +641,20 @@ namespace Environment {
                     return humidity;
                 }
                 
-                if (humidity !== 0) {
-                    __stable_count++;
-                    if (__stable_count >= STABLE_THRESHOLD) {
-                        __dht11_value_stable = 1;
+                if (__dht11_value_stable === 1) {
+                    let hum_diff = Math.abs(humidity - __humidity);
+                    if (hum_diff <= TEMP_FLOAT_RANGE) {
+                        __humidity = humidity;
                     }
                 } else {
-                    __stable_count = 0;
-                }
-                
-                if (__dht11_value_stable === 1) {
-                    __humidity = humidity;
-                } else {
+                    if (humidity !== 0 && humidity === __humidity) {
+                        __stable_count++;
+                        if (__stable_count >= STABLE_THRESHOLD) {
+                            __dht11_value_stable = 1;
+                        }
+                    } else {
+                        __stable_count = 0;
+                    }
                     __humidity = humidity;
                 }
                 
