@@ -487,7 +487,7 @@ namespace Environment {
     }
 
     let __dht11_last_read_time = 0;
-    let __temperature: number = 0
+    let __temperature: number = 999
     let __humidity: number = 0
 
     const TEMP_FLOAT_RANGE = 10;
@@ -612,6 +612,19 @@ namespace Environment {
             }
 
             fail_flag = 1;
+        }
+
+        if (__temperature != 999) {
+            switch (dht11type) {
+                case DHT11Type.DHT11_temperature_C:
+                    return __temperature
+                case DHT11Type.DHT11_temperature_F:
+                    return (__temperature * 1.8) + 32
+                case DHT11Type.DHT11_humidity:
+                    return __humidity
+                default:
+                    return 0
+            }
         }
 
         switch (dht11type) {
