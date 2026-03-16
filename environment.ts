@@ -540,7 +540,7 @@ namespace Environment {
                     return temp_c;
                 }
                 
-                if (temp_c !== 0) {
+                if (temp_c !== 0 && temp_c === __temperature) {
                     __stable_count++;
                     if (__stable_count >= STABLE_THRESHOLD) {
                         __dht11_value_stable = 1;
