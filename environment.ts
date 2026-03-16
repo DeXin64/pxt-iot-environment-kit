@@ -518,37 +518,29 @@ namespace Environment {
                 basic.pause(5);
             }
             fail_flag = 0;
-            // 拉高1us后拉低代表重置
-            pins.digitalWritePin(pin, 1)
-            delay_us(1)
             pins.digitalWritePin(pin, 0)
             basic.pause(18)
-            // 等待18ms后拉高代表开始
-            pins.digitalWritePin(pin, 1) //pull up pin for 18us
-            delay_us(30)
-            pins.digitalReadPin(pin);
-            if (!(waitDigitalReadPin(1, 9999, pin))) continue;
-            if (!(waitDigitalReadPin(0, 9999, pin))) continue;
+            pins.setPull(pin, PinPullMode.PullUp)
+            while (pins.digitalReadPin(pin) == 1);
+            while (pins.digitalReadPin(pin) == 0);
+            while (pins.digitalReadPin(pin) == 1);
             //read data (5 bytes)
             let data_arr = [0, 0, 0, 0, 0];
             let i, j;
             for (i = 0; i < 5; i++) {
                 for (j = 0; j < 8; j++) {
-                    if (!(waitDigitalReadPin(0, 9999, pin))) {
-                        fail_flag = 1
-                        break;
+                    let counterd = 0;
+                    let counter = 0;
+                    while (pins.digitalReadPin(pin) == 0) {
+                        counterd += 1;
                     }
-                    if (!(waitDigitalReadPin(1, 9999, pin))) {
-                        fail_flag = 1
-                        break;
+                    while (pins.digitalReadPin(pin) == 1) {
+                        counter += 1;
                     }
-                    delay_us(40)
-                    //if sensor still pull up data pin after 28 us it means 1, otherwise 0
-                    if (pins.digitalReadPin(pin) == 1) {
-                        data_arr[i] |= 1 << (7 - j)
+                    if (counter > counterd) {
+                        data_arr[i] |= 1 << (7 - j);
                     }
                 }
-                if (fail_flag) break;
             }
             if (fail_flag) {
                 continue;
