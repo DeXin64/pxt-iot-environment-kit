@@ -570,20 +570,20 @@ namespace Environment {
                 }
                 basic.pause(1500)
                 
-                let temp_c = (dhtvalue >> 16) & 0xFF;
-                let temp_f = Math.round((temp_c * 9 / 5) + 32);
+                let temp_c_f = (dhtvalue >> 16) & 0xFF;
+                let temp_f = Math.round((temp_c_f * 9 / 5) + 32);
                 
                 if (__dht11_power_on === 1) {
-                    __temperature = temp_c;
+                    __temperature = temp_c_f;
                     __dht11_power_on = 0;
                     __dht11_value_stable = 1;
                     return temp_f;
                 }
                 
                 if (__dht11_value_stable === 1) {
-                    let temp_diff = Math.abs(temp_c - __temperature);
+                    let temp_diff = Math.abs(temp_c_f - __temperature);
                     if (temp_diff <= TEMP_FLOAT_RANGE) {
-                        __temperature = temp_c;
+                        __temperature = temp_c_f;
                     }
                 }
                 
